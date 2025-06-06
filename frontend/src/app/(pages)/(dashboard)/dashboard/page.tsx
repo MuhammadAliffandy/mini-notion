@@ -10,37 +10,33 @@ import AppNoteTitleCreate from "@/app/components/organisms/AppNoteTitleCreate/Ap
 import AppContentCreate from "@/app/components/templates/AppContentCreate/AppContentCreate";
 import AppModalEditTitle from "@/app/components/organisms/AppModalEditTittle/AppModalEditTitle";
 import * as noteRepository from "@/app/api/repository/noteRepository";
-import * as blockRepository from "@/app/api/repository/blockRepository";
+import * as userRepository from "@/app/api/repository/userRepository";
 import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { Notes } from "@/app/utils/types";
+import { Notes, Users } from "@/app/utils/types";
 import { convertDateString } from "@/app/utils/helper";
 import React, { useEffect, useState } from "react";
 import { setNoteId } from "@/app/redux/slices/noteSlices";
 
 const DashboardView: React.FC = () => {
     const dispatch = useDispatch();
-    let noteSelected: any = [];
     const [selectAll, setSelectAll] = useState<boolean>(false);
+    const [user, setUser] = useState<Users>({} as Users);
     const [notes, setNotes] = useState<Notes[]>([]);
+    const [currentNotes, setCurrentNotes] = useState<Notes[]>([]);
     const [selectedNoteIds, setSelectedNoteIds] = useState<number[]>([]);
     const [noteIdData, setNoteIdData] = useState<number>(0);
+    const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
     const [modalEdit, setModalEdit] = useState<boolean>(false);
     const [showContent, setShowContent] = useState<boolean>(false);
     const [showContentCreate, setShowContentCreate] = useState<boolean>(false);
     const [showNoteTitleCreate, setShowNoteTitleCreate] =
         useState<boolean>(false);
     const [activeCheck, setActiveCheck] = useState<boolean>(false);
-    const userId = useSelector(
-        (state: { user: { value: any } }) => state.user.value
-    );
 
-    const { control } = useForm({
-        defaultValues: {
-            search: "Search content...",
-        },
-    });
+    const { control, watch } = useForm({});
+    const searchValue = watch("search");
     const {
         control: controlNoteEditTitle,
         handleSubmit: handleNoteEditTitleSubmit,
@@ -53,6 +49,19 @@ const DashboardView: React.FC = () => {
                 noteTitle: "",
             },
         });
+
+    const getUser = async () => {
+        try {
+            const res = await userRepository.getUser();
+            if (res.status === "OK") {
+                setUser(res.data);
+            } else {
+                toast.error(res.message || "Failed to fetch user data.");
+            }
+        } catch (error) {
+            toast.error("Failed to fetch user data.");
+        }
+    };
 
     const handleNoteCreate = async (data: { noteTitle: string }) => {
         try {
@@ -160,6 +169,7 @@ const DashboardView: React.FC = () => {
             const res = await noteRepository.readNotes();
             if (res.status == "OK") {
                 setNotes(res.data);
+                setCurrentNotes(res.data);
             } else {
                 toast.error(res.message || "Failed to fetch notes");
             }
@@ -196,16 +206,49 @@ const DashboardView: React.FC = () => {
             setSelectedNoteIds([]);
         }
     };
+
+    const handleNoteSearch = (searchTerm: string) => {
+        if (!searchTerm) {
+            setNotes(currentNotes);
+            return;
+        }
+
+        const filteredNotes = currentNotes.filter((note) =>
+            note.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setNotes(filteredNotes);
+    };
+
     useEffect(() => {
         handleNoteList();
     }, []);
 
+    useEffect(() => {
+        getUser();
+    }, []);
+
+    useEffect(() => {
+        if (searchValue !== undefined) {
+            handleNoteSearch(searchValue);
+        }
+    }, [searchValue]);
+
     return (
-        <AppContainer className="w-full h-screen flex items-center bg-gray-200 justify-center  ">
-            <AppContainer className="w-[12%] h-full bg-black">
+        <AppContainer className="w-full h-screen flex items-center bg-gray-200 justify-center relative ">
+            <AppContainer
+                className={`w-[50%] sm:w-[50%] md:w-[30%] lg:w-[20%] xl:w-[12%] h-full  bg-black ${
+                    sidebarOpen &&
+                    " block sm:block md:block lg:block left-0 z-20 absolute sm:absolute md:absolute lg:absolute"
+                }  ${
+                    !sidebarOpen && " hidden sm:hidden md:hidden lg:hidden"
+                } xl:block`}
+            >
                 <AppSideBarList />
             </AppContainer>
-            <AppContainer className="w-[88%] h-full flex flex-col p-[20px] gap-[20px]">
+            <AppContainer
+                onClick={() => setSidebarOpen(false)}
+                className="w-full sm:w-full md:w-full lg:w-full xl:w-[88%] h-full flex flex-col p-[20px] gap-[20px]"
+            >
                 {showContent && (
                     <AppContentView onClick={() => setShowContent(false)} />
                 )}
@@ -218,7 +261,11 @@ const DashboardView: React.FC = () => {
                     <>
                         <AppToolbarDashboard
                             control={control}
-                            titleProfile="John Smith"
+                            titleProfile={user.name || "User"}
+                            onClickSidebar={() => {
+                                setSidebarOpen(true);
+                                console.log("adssadsa");
+                            }}
                         />
 
                         <AppContainer className="w-full h-full p-[20px] rounded-2xl flex flex-col items-start gap-[20px] bg-white">

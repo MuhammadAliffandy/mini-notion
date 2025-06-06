@@ -32,7 +32,7 @@ const AppSubtitleContent: React.FC<AppSubtitleContentProps> = (props) => {
                     },
                     editorProps: {
                         attributes: {
-                            class: "max-h-max p-2 max-w-[80vw] break-words w-full border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 ",
+                            class: "max-h-max max-w-[80vw] break-words w-full  border border-none focus:outline-none ",
                         },
                         handleDOMEvents: {
                             blur: () => {
@@ -42,7 +42,7 @@ const AppSubtitleContent: React.FC<AppSubtitleContentProps> = (props) => {
                             },
                         },
                     },
-                    autofocus: true, // Tambahkan properti ini untuk memastikan editor langsung fokus
+                    autofocus: true,
                 });
 
                 useEffect(() => {
@@ -53,7 +53,7 @@ const AppSubtitleContent: React.FC<AppSubtitleContentProps> = (props) => {
 
                 useEffect(() => {
                     if (editing && editor) {
-                        editor.commands.focus(); // Fokuskan editor saat editing diaktifkan
+                        editor.commands.focus();
                     }
                 }, [editing, editor]);
 
@@ -77,7 +77,7 @@ const AppSubtitleContent: React.FC<AppSubtitleContentProps> = (props) => {
                                 dangerouslySetInnerHTML={{
                                     __html:
                                         value ||
-                                        "<p>Klik untuk mulai mengetik</p>",
+                                        "<p>Click for get the type text</p>",
                                 }}
                             />
                         )}

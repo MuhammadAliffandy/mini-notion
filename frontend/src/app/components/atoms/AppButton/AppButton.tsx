@@ -20,7 +20,7 @@ const AppButton: React.FC<AppButton> = ({
             type={type}
             onClick={onClick}
             disabled={disabled}
-            className={`px-[30px] py-3 w-full text-[14px] font-extrabold rounded-full bg-black text-white ${className}`}
+            className={`px-[30px] py-3 w-full text-[14px] font-extrabold rounded-full cursor-pointer bg-black text-white ${className}`}
         >
             {text}
         </button>

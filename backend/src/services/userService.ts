@@ -23,6 +23,15 @@ export const createUser = (payload: User) => {
     return userRepository.createUser(payload);
 }
 
+export const forgotPassword = async (email: string, password: string) => {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const updatedUser = await userRepository.forgotPassword(email, hashedPassword);
+
+    if (!updatedUser) throw new CustomError(404, "Email not found");
+
+    return updatedUser;
+}
+
 export const login = async (payload: User) => {
     const { email, password } = payload
   

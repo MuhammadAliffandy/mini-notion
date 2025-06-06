@@ -7,24 +7,40 @@ import AppRichTextButton from "@/app/components/molecules/AppRichTextButton/AppR
 import AppButton from "@/app/components/atoms/AppButton/AppButton";
 import { toast } from "react-toastify";
 import * as userRepository from "@/app/api/repository/userRepository";
-import { Users } from "@/app/utils/types";
+
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { setToken } from "@/app/redux/slices/authSlices";
 
 const RegisterView = () => {
+    const { push } = useRouter();
+    const dispatch = useDispatch();
     const {
         handleSubmit,
         control,
+        getValues,
         formState: { errors },
     } = useForm();
 
-    const handleRegister = async (data: Users) => {
+    const handleRegister = async (data: any) => {
         try {
             const res = await userRepository.register(data);
             if (res.status === "OK") {
-                toast.success("Registration successful!", {
-                    onClose: () => {
-                        console.log("Redirect to login page");
-                    },
+                toast.success("Registration successful!");
+
+                const loginData = await userRepository.login({
+                    email: data.email,
+                    password: data.password,
                 });
+
+                if (loginData.status === "OK") {
+                    dispatch(setToken(loginData.data.accessToken));
+                    push("/dashboard");
+                } else {
+                    toast.error(
+                        loginData.message || "Login failed. Please try again."
+                    );
+                }
             } else {
                 toast.error(
                     res.message || "Registration failed. Please try again."
@@ -35,12 +51,8 @@ const RegisterView = () => {
         }
     };
 
-    const onSubmit = (data: any) => {
-        handleRegister(data as Users);
-    };
-
     return (
-        <AppContainer className="w-[30%] h-max flex flex-col items-center gap-[20px] justify-center p-[40px] rounded-xl shadow-xl bg-white">
+        <AppContainer className="w-[90%] sm:w-[90%] md:w-[50%] lg:w-[40%] xl:w-[30%] h-max flex flex-col items-center gap-[20px] justify-center p-[40px] rounded-xl shadow-xl bg-white">
             <AppHeadline
                 title="Hallo, Welcome To Mini Notice"
                 subtitle="Please register to continue"
@@ -88,18 +100,34 @@ const RegisterView = () => {
                     type="password"
                 />
             </AppContainer>
+            <AppContainer className="flex flex-col w-full h-max gap-[10px] ">
+                <label className="text-black text-[14px] ">
+                    Konfirmasi Password
+                </label>
+                <AppTextField
+                    control={control}
+                    name="confirmPassword"
+                    rules={{
+                        required: "Password confirmation is required",
+                        validate: (value: string) =>
+                            value === getValues("password") ||
+                            "Password tidak cocok",
+                    }}
+                    placeholder="Confirm Password"
+                    type="password"
+                />
+            </AppContainer>
 
-            <p className="text-black text-[14px] self-end ">Lupa Password ?</p>
             <AppButton
                 text="Register"
                 type="submit"
-                onClick={handleSubmit(onSubmit)}
+                onClick={handleSubmit(handleRegister)}
             />
 
             <AppRichTextButton
                 title="Do have an account?"
                 subtitle="Sign In"
-                onClick={() => console.log("Navigate to Sign In")}
+                onClick={() => push("/auth/login")}
             />
         </AppContainer>
     );

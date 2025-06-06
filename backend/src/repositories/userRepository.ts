@@ -19,6 +19,20 @@ export const findByEmail =  (email: string) => {
 }
 
 
+export const forgotPassword = async (email: string, password: string) => {
+    const updatedUser = await prisma.users.update({
+        where: {
+            email: email,
+        },
+        data: {
+            password: password
+        }
+    })
+
+    return updatedUser
+}
+
+
 export const updateById = async (id:number , payload:User) => {
     const updatedUser = await prisma.users.update({
       where: {

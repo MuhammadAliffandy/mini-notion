@@ -6,8 +6,9 @@ import {
     PROVIDER_PUT,
 } from "../provider";
 
-import { getCookie } from "@/app/utils/helper";
-const token = getCookie("token") || "";
+import { Store } from "@/app/redux/store";
+
+const getToken = () => Store.getState().auth.value;
 
 const delay = (): Promise<void> =>
     new Promise((res) => setTimeout(() => res(), 800));
@@ -30,8 +31,14 @@ export const logout = async () => {
     return response;
 };
 
+export const forgotPass = async (data: Users) => {
+    await delay();
+    const response = await PROVIDER_POST("auth/forgot-pass", data);
+    return response;
+};
+
 export const getUser = async () => {
     await delay();
-    const response = await PROVIDER_GET(`user`, token);
+    const response = await PROVIDER_GET(`user`, getToken());
     return response;
 };

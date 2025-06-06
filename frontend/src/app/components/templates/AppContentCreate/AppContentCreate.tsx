@@ -44,8 +44,8 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
 
     const { control, setValue, getValues, handleSubmit } = useForm<FormValues>({
         defaultValues: {
-            title: "<p>Judul awal</p>",
-            subtitle: "<p>Subjudul awal</p>",
+            title: "<p>Type a New title</p>",
+            subtitle: "<p>Type a new subtitle</p>",
             image_0: {
                 imageUrl: "https://picsum.photos/200/300",
                 width: "200",
@@ -198,7 +198,7 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                                             required:
                                                 "Judul tidak boleh kosong",
                                         }}
-                                        className="text-[22px] font-bold flex-1"
+                                        className="text-[22px] font-bold "
                                     />
                                 )}
                                 {field.type === "subtitle" && (
@@ -220,15 +220,13 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
 
                                 <Icon
                                     icon="gg:trash"
-                                    className="text-gray-300 cursor-pointer text-[28px]"
+                                    className="text-gray-200 cursor-pointer text-[28px]"
                                     onClick={() => removeField(field.name)}
                                 />
                             </AppContainer>
                         );
                     })}
                 </AppContainer>
-
-                {/* Save Button */}
 
                 <AppContainer className="w-max self-end">
                     <AppButton

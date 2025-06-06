@@ -26,6 +26,7 @@ const LoginView: React.FC = () => {
     const getUser = async () => {
         try {
             const res = await userRepository.getUser();
+
             if (res.status === "OK") {
                 dispatch(setUserId(res.data.id));
             } else {
@@ -40,13 +41,14 @@ const LoginView: React.FC = () => {
         try {
             const res = await userRepository.login(data);
             if (res.status == "OK") {
+                dispatch(setToken(res.data.accessToken));
+
+                await getUser();
                 toast.success("Login successful!", {
                     onClose: () => {
                         push("/dashboard");
                     },
                 });
-                dispatch(setToken(res.data.accessToken));
-                getUser();
             } else {
                 toast.error(res.message || "Login failed. Please try again.");
             }
@@ -60,7 +62,7 @@ const LoginView: React.FC = () => {
     };
 
     return (
-        <AppContainer className="w-[30%] h-max flex flex-col items-center gap-[20px] justify-center p-[40px] rounded-xl shadow-xl bg-white">
+        <AppContainer className=" w-[90%] sm:w-[90%] md:w-[50%] lg:w-[40%]  xl:w-[30%] h-max flex flex-col items-center gap-[20px] justify-center p-[40px] rounded-xl shadow-xl bg-white">
             <AppHeadline
                 title="Welcome To Mini Notice"
                 subtitle="Please login to continue"
@@ -97,7 +99,12 @@ const LoginView: React.FC = () => {
                 />
             </AppContainer>
 
-            <p className="text-black text-[14px] self-end ">Lupa Password ?</p>
+            <p
+                className="text-black text-[14px] self-end cursor-pointer "
+                onClick={() => push("/auth/forgot-pass")}
+            >
+                Lupa Password ?
+            </p>
             <AppButton
                 text="Login"
                 type="submit"
@@ -107,7 +114,7 @@ const LoginView: React.FC = () => {
             <AppRichTextButton
                 title="Don't have an account?"
                 subtitle="Sign Up"
-                onClick={() => console.log("Navigate to Sign Up")}
+                onClick={() => push("/auth/registration")}
             />
         </AppContainer>
     );

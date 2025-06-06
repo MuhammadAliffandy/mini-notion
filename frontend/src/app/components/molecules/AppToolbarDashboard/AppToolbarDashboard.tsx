@@ -10,12 +10,18 @@ interface AppToolbarDashboardProps {
     control: Control<any>;
     titleProfile?: string;
     onClickProfile?: () => void;
+    onClickSidebar?: () => void;
 }
 
 const AppToolbarDashboard: React.FC<AppToolbarDashboardProps> = (props) => {
     return (
         <AppContainer className="flex items-center w-full justify-between">
             <AppContainer className="flex items-center relative w-[50%] h-max  rounded-2xl">
+                <Icon
+                    icon="ph:list-bold"
+                    className="block sm:block md:block lg:block xl:hidden text-[32px] mr-3 text-black "
+                    onClick={props.onClickSidebar}
+                />
                 <AppTextField
                     control={props.control}
                     name="search"

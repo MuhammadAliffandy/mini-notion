@@ -106,3 +106,20 @@ export const findUserById = async (req: Request, res: Response) => {
     }
 }
 
+export const forgotPassword = async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+
+    try {
+        if (!email || !password) {
+            res.status(400).json(new CustomResponse("FAIL", "Email and Password are required"));
+            return
+        }
+
+        const updatedUser = await userService.forgotPassword(email, password);
+        res.status(200).json(new CustomResponse("OK", "Password updated successfully", updatedUser));
+        return;
+        
+    } catch (err: Error | any) {
+        errorHandler(err, res);
+    }
+}

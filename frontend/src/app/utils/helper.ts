@@ -1,16 +1,7 @@
-export const setCookie = (
-    name: string,
-    value: string,
-    days: number,
-    path: string = "/"
-): void => {
-    const expires = new Date();
-    expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-    const cookieValue =
-        encodeURIComponent(value) +
-        (days ? `; expires=${expires.toUTCString()}` : "") +
-        `; path=${path}`;
-    document.cookie = `${name}=${cookieValue}`;
+export const setCookie = (name: string, value: string, days: number) => {
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
 };
 
 export const getCookie = (name: string): string | null => {
@@ -33,5 +24,5 @@ export const convertDateString = (isoString: string): string => {
         year: "numeric",
     };
 
-    return tanggal.toLocaleDateString("id-ID", options);
+    return tanggal.toLocaleDateString("en-US", options);
 };

@@ -8,7 +8,7 @@ const authSlice = createSlice({
   },
   reducers: {
     getToken: (state) => {
-      state.value = getCookie("token") || "";
+      state.value = getCookie("token") as string;
     },
     setToken: (state, action) => {
       const token = action.payload;

@@ -86,7 +86,7 @@ export const updateBlock = async (req: Request, res: Response) => {
     } catch (err: Error | any) {
         errorHandler(err, res);
     }
-    }
+  }
 
 export const deleteBlock = async (req: Request, res: Response) => {
     const blockId = parseInt(req.params.id);
