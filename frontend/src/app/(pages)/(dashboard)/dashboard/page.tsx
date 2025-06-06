@@ -59,7 +59,7 @@ const DashboardView: React.FC = () => {
             const payload = {
                 title: data.noteTitle,
             };
-            const res = await noteRepository.createNote(payload);
+            const res = await noteRepository.createNote(payload as Notes);
 
             if (res.status == "OK") {
                 toast.success("Note title created successfully");
@@ -78,7 +78,10 @@ const DashboardView: React.FC = () => {
             const payload = {
                 title: data.noteEditTitle,
             };
-            const res = await noteRepository.updateNote(noteIdData, payload);
+            const res = await noteRepository.updateNote(
+                noteIdData,
+                payload as Notes
+            );
             if (res.status == "OK") {
                 toast.success("Note title updated successfully");
                 setModalEdit(false);
@@ -86,6 +89,25 @@ const DashboardView: React.FC = () => {
             } else {
                 toast.error(res.message || "Failed to update note title");
             }
+        } catch (error) {
+            toast.error("Failed to update note title");
+        }
+    };
+    const handleNoteAllUpdate = async (data: Notes[]) => {
+        try {
+            data.forEach(async (note) => {
+                const payload = { title: note.title };
+
+                const res = await noteRepository.updateNote(
+                    note.id as number,
+                    payload as Notes
+                );
+                if (res.status == "OK") {
+                    handleNoteList();
+                } else {
+                    toast.error(res.message || "Fail ed to update note title");
+                }
+            });
         } catch (error) {
             toast.error("Failed to update note title");
         }
@@ -222,7 +244,10 @@ const DashboardView: React.FC = () => {
 
                             <AppSortableList
                                 items={notes}
-                                onChange={setNotes}
+                                onChange={(notes) => {
+                                    setNotes([...notes]);
+                                    handleNoteAllUpdate(notes);
+                                }}
                                 getId={(note) => note?.id?.toString() || ""}
                                 renderItem={(note) => (
                                     <AppCardTitle

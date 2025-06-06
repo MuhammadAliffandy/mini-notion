@@ -25,7 +25,7 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
     const [note, setNote] = useState<Partial<Notes>>({});
     const [blocks, setBlocks] = useState<Blocks[]>([]);
     const [buttonSaved, setButtonSaved] = useState<boolean>(false);
-    const { control, handleSubmit, setValue, getValues } = useForm();
+    const { control, setValue, getValues } = useForm();
 
     const handleGetNote = async () => {
         try {
@@ -46,14 +46,23 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
             if (res.status === "OK") {
                 setBlocks(res.data);
 
-                res.data.forEach((data: Blocks, index: number) => {
-                    if (data.type === "text" && data.parent_id == null) {
-                        setValue(`title_${index}`, data.content || "");
+                const renderField = res.data.forEach(
+                    (data: Blocks, index: number) => {
+                        if (data.type === "text" && data.parent_id == null) {
+                            setValue(`title_${index}`, data.content || "");
+                        }
+                        if (data.type === "text" && data.parent_id != null) {
+                            setValue(`subtitle_${index}`, data.content || "");
+                        }
+                        if (data.type === "image") {
+                            setValue(`image_${index}`, {
+                                imageUrl: data.content || "",
+                                width: "200",
+                                height: "200",
+                            });
+                        }
                     }
-                    if (data.type === "text" && data.parent_id != null) {
-                        setValue(`subtitle_${index}`, data.content || "");
-                    }
-                });
+                );
             } else {
                 toast.error(res.message || "Failed to fetch blocks data");
             }
@@ -66,7 +75,6 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
         try {
             const res = await blockRepository.updateBlock(id, data);
             if (res.status === "OK") {
-                toast.success("Blocks data updated successfully");
                 setButtonSaved(false);
                 await handleGetBlocks();
             } else {
@@ -74,6 +82,49 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
             }
         } catch (error) {
             toast.error("Failed to update blocks data");
+        }
+    };
+
+    const handleUpdateAllBlocks = async () => {
+        try {
+            blocks.forEach(async (block, index) => {
+                let updatedData: Partial<Blocks> | null = null;
+
+                if (block.type === "text" && block.parent_id == null) {
+                    const titleValue = getValues(`title_${index}`);
+                    if (block.content !== titleValue) {
+                        updatedData = { ...block, content: titleValue };
+                    }
+                }
+
+                if (block.type === "text" && block.parent_id != null) {
+                    const subtitleValue = getValues(`subtitle_${index}`);
+                    if (block.content !== subtitleValue) {
+                        updatedData = { ...block, content: subtitleValue };
+                    }
+                }
+
+                if (block.type === "image") {
+                    const imageValue = getValues(`image_${index}`);
+                    if (block.content !== imageValue.imageUrl) {
+                        updatedData = {
+                            ...block,
+                            content: imageValue.imageUrl,
+                        };
+                    }
+                }
+
+                if (updatedData) {
+                    await handleUpdateBlocks(
+                        block.id as number,
+                        updatedData as Blocks
+                    );
+                }
+            });
+
+            toast.success("All blocks updated successfully!");
+        } catch (error) {
+            toast.error("Failed to update some blocks.");
         }
     };
 
@@ -133,6 +184,7 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                                 <AppImageContent
                                     control={control}
                                     namePrefix={`image_${index}`}
+                                    onChange={(value) => setButtonSaved(value)}
                                 />
                             )}
                         </div>
@@ -141,8 +193,8 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                 {buttonSaved && (
                     <AppButton
                         text="Simpan"
-                        className="w-max self-end"
-                        onClick={() => {}}
+                        className="w-max self-end cursor-pointer"
+                        onClick={handleUpdateAllBlocks}
                     />
                 )}
             </AppContainer>

@@ -21,7 +21,7 @@ interface AppCardTitleProps {
 
 const AppCardTitle: React.FC<AppCardTitleProps> = (props) => {
     return (
-        <AppContainer className="w-full shadow-md flex items-center p-[20px] bg-white rounded-2xl  justify-between text-black cursor-pointer ">
+        <AppContainer className="w-full shadow-md flex items-center p-[20px] bg-white rounded-2xl  justify-between text-black  ">
             <AppContainer className="flex items-center gap-[10px] w-[30%]">
                 {props.isChecked && (
                     <AppCheck

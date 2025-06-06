@@ -1,13 +1,19 @@
 "use client";
 import AppContainer from "../../atoms/AppContainer/AppContainer";
-import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { set, useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import AppTitleContent from "../../molecules/AppTitleContent/AppTitleContent";
 import AppSubtitleContent from "../../molecules/AppSubtitleContent/AppSubtitleContent";
 import { Icon } from "@iconify/react";
 import AppButton from "../../atoms/AppButton/AppButton";
 import AppImageContent from "../../molecules/AppImageContent/AppImageContent";
 import AppToolbarCreate from "../../molecules/AppToolbarCreate/AppToolbarCreate";
+import * as bloksRepository from "@/app/api/repository/blockRepository";
+import * as notesRepository from "@/app/api/repository/noteRepository";
+import { toast } from "react-toastify";
+import { Blocks } from "@/app/utils/types";
+import { useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
 
 interface AppContentViewProps {
     onClick?: () => void;
@@ -16,6 +22,8 @@ interface AppContentViewProps {
 type FieldItem = {
     type: "title" | "subtitle" | "image";
     name: string;
+    order_index: number;
+    parent_id?: number | null;
 };
 
 type ImageField = {
@@ -31,7 +39,10 @@ type FormValues = {
 };
 
 const AppContentView: React.FC<AppContentViewProps> = (props) => {
-    const { control, setValue } = useForm<FormValues>({
+    const noteId = useSelector((state: any) => state.note.value);
+    const { push } = useRouter();
+
+    const { control, setValue, getValues, handleSubmit } = useForm<FormValues>({
         defaultValues: {
             title: "<p>Judul awal</p>",
             subtitle: "<p>Subjudul awal</p>",
@@ -44,9 +55,9 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
     });
 
     const [fields, setFields] = useState<FieldItem[]>([
-        { type: "title", name: "title" },
-        { type: "subtitle", name: "subtitle" },
-        { type: "image", name: "image_0" },
+        { type: "title", name: "title", order_index: 0 },
+        { type: "subtitle", name: "subtitle", order_index: 1 },
+        { type: "image", name: "image_0", order_index: 2 },
     ]);
 
     const [titleCount, setTitleCount] = useState(1);
@@ -55,21 +66,30 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
 
     const addTitleField = () => {
         const name = `title_${titleCount}`;
-        setFields((prev) => [...prev, { type: "title", name }]);
+        setFields((prev) => [
+            ...prev,
+            { type: "title", name, order_index: prev.length },
+        ]);
         setTitleCount((prev) => prev + 1);
         setValue(name, "<p>Judul baru</p>");
     };
 
     const addSubtitleField = () => {
         const name = `subtitle_${subtitleCount}`;
-        setFields((prev) => [...prev, { type: "subtitle", name }]);
+        setFields((prev) => [
+            ...prev,
+            { type: "subtitle", name, order_index: prev.length },
+        ]);
         setSubtitleCount((prev) => prev + 1);
         setValue(name, "<p>Subjudul baru</p>");
     };
 
     const addImageField = () => {
         const name = `image_${imageCount}`;
-        setFields((prev) => [...prev, { type: "image", name }]);
+        setFields((prev) => [
+            ...prev,
+            { type: "image", name, order_index: prev.length },
+        ]);
         setImageCount((prev) => prev + 1);
         setValue(name, {
             imageUrl: "https://picsum.photos/200/300",
@@ -78,12 +98,69 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
         });
     };
 
-    // Fungsi untuk menghapus field
     const removeField = (name: string) => {
-        // Hapus dari fields
-        setFields((prev) => prev.filter((f) => f.name !== name));
-        // Hapus value di form (set undefined)
+        setFields(
+            (prev) =>
+                prev
+                    .filter((f) => f.name !== name)
+                    .map((field, index) => ({ ...field, order_index: index })) // Update order_index
+        );
+
         setValue(name, undefined);
+    };
+
+    const handleBlockCreate = async () => {
+        const processedFields = fields.map((field, index, arr) => {
+            if (field.type === "subtitle") {
+                for (let i = index - 1; i >= 0; i--) {
+                    if (arr[i].type === "title") {
+                        return {
+                            ...field,
+                            parent_id: i + 1,
+                        };
+                    }
+                }
+            }
+            return field;
+        });
+
+        const data = processedFields.map((field, index) => {
+            return {
+                content:
+                    field.type == "image"
+                        ? (getValues(field.name) as ImageField)?.imageUrl
+                        : getValues(field.name),
+                type: field.type != "image" ? "text" : "image",
+                order_index: field.order_index,
+                parent_id: field.type === "subtitle" ? field.parent_id : null,
+                note_id: noteId,
+            };
+        });
+
+        const toastId = toast.loading("Uploading blocks...");
+
+        try {
+            for (const item of data) {
+                await bloksRepository.createBlock(item as Blocks);
+            }
+
+            toast.update(toastId, {
+                render: "All blocks uploaded successfully!",
+                type: "success",
+                isLoading: false,
+                autoClose: 3000,
+                onClose: () => {
+                    push("/dashboard");
+                },
+            });
+        } catch (error) {
+            toast.update(toastId, {
+                render: "Failed to upload some blocks.",
+                type: "error",
+                isLoading: false,
+                autoClose: 3000,
+            });
+        }
     };
 
     return (
@@ -108,7 +185,6 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                 {/* Dynamic Content Rendering */}
                 <AppContainer className="w-full h-full flex flex-col gap-[10px] text-black overflow-y-auto overflow-x-hidden">
                     {fields.map((field) => {
-                        // Render dengan tombol hapus di samping
                         return (
                             <AppContainer
                                 key={field.name}
@@ -142,7 +218,6 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                                     />
                                 )}
 
-                                {/* Tombol hapus */}
                                 <Icon
                                     icon="gg:trash"
                                     className="text-gray-300 cursor-pointer text-[28px]"
@@ -156,7 +231,10 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                 {/* Save Button */}
 
                 <AppContainer className="w-max self-end">
-                    <AppButton text="Tambah Blocks" onClick={() => {}} />
+                    <AppButton
+                        text="Add Block"
+                        onClick={handleSubmit(handleBlockCreate)}
+                    />
                 </AppContainer>
             </AppContainer>
         </AppContainer>

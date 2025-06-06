@@ -42,6 +42,7 @@ const AppSubtitleContent: React.FC<AppSubtitleContentProps> = (props) => {
                             },
                         },
                     },
+                    autofocus: true, // Tambahkan properti ini untuk memastikan editor langsung fokus
                 });
 
                 useEffect(() => {
@@ -49,6 +50,12 @@ const AppSubtitleContent: React.FC<AppSubtitleContentProps> = (props) => {
                         editor.commands.setContent(value || "");
                     }
                 }, [value, editor]);
+
+                useEffect(() => {
+                    if (editing && editor) {
+                        editor.commands.focus(); // Fokuskan editor saat editing diaktifkan
+                    }
+                }, [editing, editor]);
 
                 if (!editor) return <></>;
 

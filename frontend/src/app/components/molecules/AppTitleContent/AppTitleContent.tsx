@@ -42,6 +42,7 @@ const AppTitleContent: React.FC<AppTitleContentProps> = (props) => {
                             },
                         } as any,
                     },
+                    autofocus: true, // Tambahkan properti ini untuk memastikan editor langsung fokus
                 });
 
                 useEffect(() => {
@@ -49,6 +50,12 @@ const AppTitleContent: React.FC<AppTitleContentProps> = (props) => {
                         editor.commands.setContent(value || "");
                     }
                 }, [value, editor]);
+
+                useEffect(() => {
+                    if (editing && editor) {
+                        editor.commands.focus(); // Fokuskan editor saat editing diaktifkan
+                    }
+                }, [editing, editor]);
 
                 if (!editor) return <></>;
 

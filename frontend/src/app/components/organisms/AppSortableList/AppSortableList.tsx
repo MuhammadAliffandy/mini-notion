@@ -4,6 +4,7 @@ import {
     closestCenter,
     KeyboardSensor,
     PointerSensor,
+    TouchSensor,
     useSensor,
     useSensors,
     DragEndEvent,
@@ -19,10 +20,10 @@ import React from "react";
 import { Icon } from "@iconify/react";
 
 interface AppSortableListProps<T> {
-  items: T[];
-  onChange: (items: T[]) => void;
-  renderItem?: (item: T) => React.ReactNode;
-  getId: (item: T) => string; // ← penting
+    items: T[];
+    onChange: (items: T[]) => void;
+    renderItem?: (item: T) => React.ReactNode;
+    getId: (item: T) => string;
 }
 
 interface SortableItemProps {
@@ -50,57 +51,63 @@ function SortableItem({ id, children }: SortableItemProps) {
         <div
             ref={setNodeRef}
             style={style}
-            className="w-full  flex gap-[12px] items-center"
+            className="w-full flex gap-[12px] items-center"
             {...attributes}
         >
-            {/* drag handle */}
-            <div {...listeners} className="w-max cursor-grab">
+            <div {...listeners} className="w-max cursor-grab p-2">
                 <Icon
                     icon="lsicon:drag-outline"
-                    className="text-gray-500 text-[32px]"
+                    className="text-gray-500 text-[32px] md:text-[24px]"
                 />
             </div>
 
-            {/* isi item yang bisa diklik */}
             <div className="w-full">{children}</div>
         </div>
     );
 }
 
 function AppSortableList<T>({
-  items,
-  onChange,
-  renderItem,
-  getId,
+    items,
+    onChange,
+    renderItem,
+    getId,
 }: AppSortableListProps<T>) {
-  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor),
+        useSensor(TouchSensor)
+    );
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const oldIndex = items.findIndex((item) => getId(item) === active.id);
-      const newIndex = items.findIndex((item) => getId(item) === over.id);
-      const newItems = arrayMove(items, oldIndex, newIndex);
-      onChange(newItems);
-    }
-  };
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            const oldIndex = items.findIndex(
+                (item) => getId(item) === active.id
+            );
+            const newIndex = items.findIndex((item) => getId(item) === over.id);
+            const newItems = arrayMove(items, oldIndex, newIndex);
+            onChange(newItems);
+        }
+    };
 
-  return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext items={items.map(getId)} strategy={verticalListSortingStrategy}>
-        {items.map((item) => (
-          <SortableItem key={getId(item)} id={getId(item)}>
-            {renderItem ? renderItem(item) : getId(item)}
-          </SortableItem>
-        ))}
-      </SortableContext>
-    </DndContext>
-  );
+    return (
+        <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+        >
+            <SortableContext
+                items={items.map(getId)}
+                strategy={verticalListSortingStrategy}
+            >
+                {items.map((item) => (
+                    <SortableItem key={getId(item)} id={getId(item)}>
+                        {renderItem ? renderItem(item) : getId(item)}
+                    </SortableItem>
+                ))}
+            </SortableContext>
+        </DndContext>
+    );
 }
-
 
 export default AppSortableList;

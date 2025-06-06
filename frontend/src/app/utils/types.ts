@@ -5,6 +5,7 @@ export interface Users {
 }
 
 export interface Notes {
+    forEach: any;
     id?: number;
     title: string;
     user_id?: string;
