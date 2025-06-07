@@ -7,6 +7,20 @@ export const findByNoteId = (id: number) => {
         where: {
             note_id : id,
         },
+        include : {
+            note: {
+                select: {
+                    title: true,
+                    id: true,
+                    user: {
+                        select: {
+                            name: true,
+                        },
+                    },
+                },
+            },
+            children: true,
+        },
         orderBy: {
             order_index: 'asc', 
         },
@@ -19,7 +33,6 @@ export const readBlocks = () => {
         },
         include : {
             note: true,
-          
         
         }
     });

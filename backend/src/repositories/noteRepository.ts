@@ -24,7 +24,7 @@ export const readNote =  (id: number) => {
             deletedAt: null,
         },
         include: {
-            blocks:true
+            blocks:true,
         }
     })
 }

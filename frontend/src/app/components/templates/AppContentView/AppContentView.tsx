@@ -14,7 +14,7 @@ import * as noteRepository from "../../../api/repository/noteRepository";
 import { Blocks, Notes } from "@/app/utils/types";
 import { convertDateString, decodeImageUrl , encodeImageUrl } from "@/app/utils/helper";
 import { io } from "socket.io-client";
-import { debounce, set } from "lodash";
+
 
 
 interface AppContentViewProps {
@@ -30,9 +30,7 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
 
     const [note, setNote] = useState<Partial<Notes>>({});
     const [blocks, setBlocks] = useState<Blocks[]>([]);
-    const [typing , setTyping] = useState<boolean>(false);
- 
-    const [fields, setFields] = useState<string[]>([]);
+    const [lastUpdatedBy , setLastUpdatedBy] = useState<string>("");
     const { control, setValue, getValues, watch } = useForm();
 
     const handleGetNote = async () => {
@@ -66,6 +64,7 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                     }
                 });
 
+                setLastUpdatedBy(res.data[0].note.user.name || "Unknown User");
              
             } else {
                 toast.error(res.message || "Failed to fetch blocks data");
@@ -148,9 +147,14 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                             subtitleClassName="text-[12px] text-left text-gray-500"
                         />
                     </AppContainer>
-                    <p className="text-[12px] text-gray-400 ">
-                        Updated {convertDateString(note.updatedAt || "")}
-                    </p>
+                    <AppContainer className="flex flex-col items-end gap-[3px]">
+                        <p className="text-[12px] text-gray-400 ">
+                            Updated {convertDateString(note.updatedAt || "")}
+                        </p>
+                        <p className="text-[12px] font-bold text-blue-400 ">
+                            Last Updated by {lastUpdatedBy}
+                        </p>
+                    </AppContainer>
                 </AppContainer>
                 <AppContainer className="w-full h-full flex flex-col gap-[10px] text-black overflow-hidden  ">
                     {blocks.map((block, index) => (
@@ -161,7 +165,6 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                                     name={`title_${index}`}
                                     rules={{ required: "Title is required" }}
                                     className="text-[22px] font-bold"
-                                 
                                     onIdle={()=> { 
                                         handleUpdateBlocks(block.id as number, { ...block, content: getValues(`title_${index as number}`)});
                                         console.log('selesai ngetik')}}

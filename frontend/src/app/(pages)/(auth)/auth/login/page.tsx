@@ -12,6 +12,8 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setToken } from "@/app/redux/slices/authSlices";
 import { setUserId } from "@/app/redux/slices/userSlices";
+import { updateToastConfig} from "@/app/utils/helper";
+
 
 const LoginView: React.FC = () => {
     const {
@@ -38,22 +40,21 @@ const LoginView: React.FC = () => {
     };
 
     const handleLogin = async (data: Users) => {
+        const toastId = toast.loading("Logging in..."); 
         try {
             const res = await userRepository.login(data);
             if (res.status == "OK") {
                 dispatch(setToken(res.data.accessToken));
-
+    
                 await getUser();
-                toast.success("Login successful!", {
-                    onClose: () => {
-                        push("/dashboard");
-                    },
-                });
+       
+                toast.update(toastId, updateToastConfig("Login successful!", "success"));
+                push("/dashboard");
             } else {
-                toast.error(res.message || "Login failed. Please try again.");
+                toast.update(toastId, updateToastConfig(res.message || "Login failed. Please check your credentials.", "error"));
             }
         } catch (error) {
-            toast.error("Login failed. Please check your credentials.");
+            toast.update(toastId, updateToastConfig("Login failed. Please try again later.", "error"));
         }
     };
 

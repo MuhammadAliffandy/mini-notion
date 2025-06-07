@@ -11,6 +11,7 @@ import * as userRepository from "@/app/api/repository/userRepository";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setToken } from "@/app/redux/slices/authSlices";
+import { updateToastConfig } from "@/app/utils/helper";
 
 const RegisterView = () => {
     const { push } = useRouter();
@@ -23,16 +24,17 @@ const RegisterView = () => {
     } = useForm();
 
     const handleRegister = async (data: any) => {
+        const toastId = toast.loading("Processing registration..."); 
         try {
             const res = await userRepository.register(data);
             if (res.status === "OK") {
-                toast.success("Registration successful!");
-
+                toast.update(toastId, updateToastConfig("Registration successful! Logging in..." , "success"));
+    
                 const loginData = await userRepository.login({
                     email: data.email,
                     password: data.password,
                 });
-
+    
                 if (loginData.status === "OK") {
                     dispatch(setToken(loginData.data.accessToken));
                     push("/dashboard");
@@ -42,12 +44,10 @@ const RegisterView = () => {
                     );
                 }
             } else {
-                toast.error(
-                    res.message || "Registration failed. Please try again."
-                );
+                toast.update(toastId, updateToastConfig("Registration failed. Please try again.", "error"));
             }
         } catch (error) {
-            toast.error("Registration failed. Please try again.");
+            toast.update(toastId, updateToastConfig("An error occurred during registration. Please try again.", "error"));
         }
     };
 

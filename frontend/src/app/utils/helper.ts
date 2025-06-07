@@ -40,3 +40,12 @@ export const decodeImageUrl = (encodedUrl: string): { imageUrl: string, width: s
 
     return { imageUrl : imageUrl, width: width, height: height };
 }
+
+export const updateToastConfig = (message: string, type: "success" | "error") => {
+     return  {
+        render: message,
+        type: type,
+        isLoading: false,
+        autoClose: 3000,
+    }
+};

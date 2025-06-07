@@ -7,6 +7,8 @@ import AppButton from "@/app/components/atoms/AppButton/AppButton";
 import { toast } from "react-toastify";
 import * as userRepository from "@/app/api/repository/userRepository";
 import { useRouter } from "next/navigation";
+import { updateToastConfig } from "@/app/utils/helper";
+
 
 const ForgotPassView: React.FC = () => {
     const { push } = useRouter();
@@ -18,24 +20,23 @@ const ForgotPassView: React.FC = () => {
     } = useForm();
 
     const handleForgotPass = async (data: any) => {
+        const toastId = toast.loading("Processing password reset..."); 
         try {
             const payload = {
                 email: data.email,
                 password: data.password,
             };
-
+    
             const res = await userRepository.forgotPass(payload);
-
+    
             if (res.status == "OK") {
-                toast.success("Password reset successful!");
+                toast.update(toastId, updateToastConfig("Password reset successful! Please log in with your new password.", "success"));
                 push("/auth/login");
             } else {
-                toast.error(
-                    res.message || "Failed to reset password. Please try again."
-                );
+                toast.update(toastId, updateToastConfig(res.message || "Failed to reset password. Please try again.", "error"));
             }
         } catch (error) {
-            toast.error("Failed to reset password. Please try again later.");
+            toast.update(toastId, updateToastConfig("Failed to reset password. Please try again.", "error"));
         }
     };
 

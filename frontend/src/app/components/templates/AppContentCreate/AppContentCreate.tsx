@@ -14,7 +14,7 @@ import { toast } from "react-toastify";
 import { Blocks, Notes } from "@/app/utils/types";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
-import { encodeImageUrl, convertDateString } from "@/app/utils/helper";
+import { encodeImageUrl, convertDateString, updateToastConfig } from "@/app/utils/helper";
 import AppHeadline from "../../molecules/AppHeadline/AppHeadline";
 
 interface AppContentViewProps {
@@ -161,25 +161,14 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                 await bloksRepository.createBlock(item as Blocks);
             }
 
-            toast.update(toastId, {
-                render: "All blocks uploaded successfully!",
-                type: "success",
-                isLoading: false,
-                autoClose: 3000,
-                onClose: () => {
-                    push("/dashboard");
-                },
-            });
+            toast.update(toastId, updateToastConfig("All blocks uploaded successfully!","success" ) )
+            push("/dashboard");
 
             props.onCreated?.(true);
 
         } catch (error) {
-            toast.update(toastId, {
-                render: "Failed to upload some blocks.",
-                type: "error",
-                isLoading: false,
-                autoClose: 3000,
-            });
+  
+            toast.update(toastId, updateToastConfig("Failed to upload some blocks.","error" ) )
 
             props.onCreated?.(false);
         }

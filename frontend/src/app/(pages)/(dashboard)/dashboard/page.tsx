@@ -15,7 +15,7 @@ import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { Notes, Users } from "@/app/utils/types";
-import { convertDateString } from "@/app/utils/helper";
+import { convertDateString, updateToastConfig } from "@/app/utils/helper";
 import React, { useEffect, useState } from "react";
 import { setNoteId } from "@/app/redux/slices/noteSlices";
 
@@ -65,25 +65,27 @@ const DashboardView: React.FC = () => {
     };
 
     const handleNoteCreate = async (data: { noteTitle: string }) => {
+        const toastId = toast.loading("Creating note title..."); 
         try {
             const payload = {
                 title: data.noteTitle,
             };
             const res = await noteRepository.createNote(payload as Notes);
-
+    
             if (res.status == "OK") {
-                toast.success("Note title created successfully");
+                toast.update(toastId, updateToastConfig("Note title created successfully", "success"));
                 setShowNoteTitleCreate(false);
                 handleNoteList();
             } else {
-                toast.error(res.message || "Failed to create note title");
+                toast.update(toastId,updateToastConfig(res.message || "Failed to create note title", "error"));
             }
         } catch (error) {
-            toast.error("Failed to create note title");
+            toast.update(toastId, updateToastConfig("Failed to create note title", "error"));
         }
     };
 
     const handleNoteUpdate = async (data: { noteEditTitle: string }) => {
+        const toastId = toast.loading("Creating note title..."); 
         try {
             const payload = {
                 title: data.noteEditTitle,
@@ -93,16 +95,19 @@ const DashboardView: React.FC = () => {
                 payload as Notes
             );
             if (res.status == "OK") {
-                toast.success("Note title updated successfully");
+           
+                toast.update(toastId, updateToastConfig("Note title updated successfully", "success"));
                 setModalEdit(false);
                 handleNoteList();
             } else {
-                toast.error(res.message || "Failed to update note title");
+           
+                toast.update(toastId, updateToastConfig(res.message || "Failed to update note title", "error"));
             }
         } catch (error) {
-            toast.error("Failed to update note title");
+            toast.update(toastId, updateToastConfig("Failed to update note title", "error"));
         }
     };
+
     const handleNoteAllUpdate = async (data: Notes[]) => {
         try {
             data.forEach(async (note) => {
@@ -124,22 +129,26 @@ const DashboardView: React.FC = () => {
     };
 
     const handleNoteDelete = async (id: number) => {
+        const toastId = toast.loading("Creating note title..."); 
         try {
             const res = await noteRepository.deleteNote(id);
             if (res.status == "OK") {
-                toast.success("Note deleted successfully");
+                toast.update(toastId, updateToastConfig("Note deleted successfully", "success"));
                 handleNoteList();
             } else {
-                toast.error(res.message || "Failed to delete note");
+                toast.update(toastId, updateToastConfig("Failed to delete note", "error"));
             }
         } catch (error) {
-            toast.error("Failed to delete note");
+            toast.update(toastId, updateToastConfig("Failed to delete note", "error"));
         }
     };
 
     const handleNoteDeleteSelected = async () => {
+
+        const toastId = toast.loading("Deleting selected notes...");
+
         if (selectedNoteIds.length === 0) {
-            toast.error("No notes selected for deletion");
+            toast.update(toastId, updateToastConfig("No notes selected for deletion", "error"));
             return;
         }
 
@@ -153,15 +162,15 @@ const DashboardView: React.FC = () => {
 
             if (failedDeletes.length > 0) {
                 setActiveCheck(false);
-                toast.error(`Failed to delete ${failedDeletes.length} notes`);
+                toast.update(toastId, updateToastConfig(`Failed to delete selected ${failedDeletes.length} notes`, "error"));
             } else {
-                toast.success("Selected notes deleted successfully");
+                toast.update(toastId, updateToastConfig("Selected notes deleted successfully", "success"));
                 handleNoteList();
                 setSelectedNoteIds([]);
                 setSelectAll(false);
             }
         } catch (error) {
-            toast.error("Failed to delete selected notes");
+            toast.update(toastId, updateToastConfig("Failed to delete selected notes", "error"));
         }
     };
 
