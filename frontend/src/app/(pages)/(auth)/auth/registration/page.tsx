@@ -54,7 +54,7 @@ const RegisterView = () => {
     return (
         <AppContainer className="w-[90%] sm:w-[90%] md:w-[50%] lg:w-[40%] xl:w-[30%] h-max flex flex-col items-center gap-[20px] justify-center p-[40px] rounded-xl shadow-xl bg-white">
             <AppHeadline
-                title="Hallo, Welcome To Mini Notice"
+                title="Hallo, Welcome To Mini Notion"
                 subtitle="Please register to continue"
             />
             <AppContainer className="flex flex-col w-full h-max gap-[10px]">
