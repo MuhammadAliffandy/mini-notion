@@ -14,18 +14,23 @@ import * as noteRepository from "../../../api/repository/noteRepository";
 import { Blocks, Notes } from "@/app/utils/types";
 import { convertDateString } from "@/app/utils/helper";
 import AppButton from "../../atoms/AppButton/AppButton";
+import { io } from "socket.io-client";
 
 interface AppContentViewProps {
     onClick?: () => void;
 }
 
 const AppContentView: React.FC<AppContentViewProps> = (props) => {
+    const socket = io(process.env.BASE_URL, {
+        transports: ["websocket", "polling"],
+    });
+
     const noteId = useSelector((state: any) => state.note.value);
 
     const [note, setNote] = useState<Partial<Notes>>({});
     const [blocks, setBlocks] = useState<Blocks[]>([]);
     const [buttonSaved, setButtonSaved] = useState<boolean>(false);
-    const { control, setValue, getValues } = useForm();
+    const { control, setValue, getValues, watch } = useForm();
 
     const handleGetNote = async () => {
         try {
@@ -46,23 +51,21 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
             if (res.status === "OK") {
                 setBlocks(res.data);
 
-                const renderField = res.data.forEach(
-                    (data: Blocks, index: number) => {
-                        if (data.type === "text" && data.parent_id == null) {
-                            setValue(`title_${index}`, data.content || "");
-                        }
-                        if (data.type === "text" && data.parent_id != null) {
-                            setValue(`subtitle_${index}`, data.content || "");
-                        }
-                        if (data.type === "image") {
-                            setValue(`image_${index}`, {
-                                imageUrl: data.content || "",
-                                width: "200",
-                                height: "200",
-                            });
-                        }
+                res.data.forEach((data: Blocks, index: number) => {
+                    if (data.type === "text" && data.parent_id == null) {
+                        setValue(`title_${index}`, data.content || "");
                     }
-                );
+                    if (data.type === "text" && data.parent_id != null) {
+                        setValue(`subtitle_${index}`, data.content || "");
+                    }
+                    if (data.type === "image") {
+                        setValue(`image_${index}`, {
+                            imageUrl: data.content || "",
+                            width: "200",
+                            height: "200",
+                        });
+                    }
+                });
             } else {
                 toast.error(res.message || "Failed to fetch blocks data");
             }
@@ -76,7 +79,6 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
             const res = await blockRepository.updateBlock(id, data);
             if (res.status === "OK") {
                 setButtonSaved(false);
-                await handleGetBlocks();
             } else {
                 toast.error(res.message || "Failed to update blocks data");
             }
@@ -85,56 +87,63 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
         }
     };
 
-    const handleUpdateAllBlocks = async () => {
-        try {
-            blocks.forEach(async (block, index) => {
-                let updatedData: Partial<Blocks> | null = null;
-
-                if (block.type === "text" && block.parent_id == null) {
-                    const titleValue = getValues(`title_${index}`);
-                    if (block.content !== titleValue) {
-                        updatedData = { ...block, content: titleValue };
-                    }
-                }
-
-                if (block.type === "text" && block.parent_id != null) {
-                    const subtitleValue = getValues(`subtitle_${index}`);
-                    if (block.content !== subtitleValue) {
-                        updatedData = { ...block, content: subtitleValue };
-                    }
-                }
-
-                if (block.type === "image") {
-                    const imageValue = getValues(`image_${index}`);
-                    if (block.content !== imageValue.imageUrl) {
-                        updatedData = {
-                            ...block,
-                            content: imageValue.imageUrl,
-                        };
-                    }
-                }
-
-                if (updatedData) {
-                    await handleUpdateBlocks(
-                        block.id as number,
-                        updatedData as Blocks
-                    );
-                }
-            });
-
-            toast.success("All blocks updated successfully!");
-        } catch (error) {
-            toast.error("Failed to update some blocks.");
-        }
-    };
-
     useEffect(() => {
-        handleGetBlocks();
+        if (blocks.length === 0) handleGetBlocks();
     }, []);
 
     useEffect(() => {
         handleGetNote();
     }, []);
+
+    useEffect(() => {
+        socket.on("connect", () => {
+            console.log("✅ Connected to server");
+        });
+
+        socket.on("block_updated", (updatedBlock) => {
+            handleGetBlocks();
+        });
+
+        return () => {
+            socket.off("block_updated");
+        };
+    }, []);
+
+    const watchedFields = watch();
+
+    useEffect(() => {
+        blocks.forEach((block, index) => {
+            if (block.type === "text" && block.parent_id == null) {
+                const current = watchedFields[`title_${index}`];
+                if (block.content !== current) {
+                    const updatedBlock = { ...block, content: current };
+                    console.log("updated");
+                    handleUpdateBlocks(block.id as number, updatedBlock);
+                }
+            }
+
+            if (block.type === "text" && block.parent_id != null) {
+                const current = watchedFields[`subtitle_${index}`];
+                if (block.content !== current) {
+                    const updatedBlock = { ...block, content: current };
+
+                    handleUpdateBlocks(block.id as number, updatedBlock);
+                }
+            }
+
+            if (block.type === "image") {
+                const current = watchedFields[`image_${index}`];
+                if (block.content !== current?.imageUrl) {
+                    const updatedBlock = {
+                        ...block,
+                        content: current?.imageUrl,
+                    };
+
+                    handleUpdateBlocks(block.id as number, updatedBlock);
+                }
+            }
+        });
+    }, [watch()]);
 
     return (
         <AppContainer className="w-full bg-white h-full flex flex-col items-start p-[20px] rounded-2xl  ">
@@ -194,7 +203,7 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                     <AppButton
                         text="Simpan"
                         className="w-max self-end cursor-pointer"
-                        onClick={handleUpdateAllBlocks}
+                        // onClick={handleUpdateBlocks}
                     />
                 )}
             </AppContainer>

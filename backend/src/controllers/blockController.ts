@@ -13,7 +13,6 @@ export const readBlocks = async (req: Request, res: Response) => {
   }
 };
 
-
 export const readBlock = async (req: Request, res: Response) => {
   const blockId = parseInt(req.params.id);
 
@@ -70,23 +69,29 @@ export const createBlock = async (req: Request, res: Response) => {
 }
 
 export const updateBlock = async (req: Request, res: Response) => {
-    const blockId = parseInt(req.params.id);
-    const payload = req.body;
-    
-    try {
-        const updatedBlock = await blockService.updateBlock(blockId, payload);
-    
-        if (!updatedBlock) {
-          res.status(404).json(new CustomResponse("FAIL", "Block not found"));
-          return 
-        }
-    
-        res.status(200).json(new CustomResponse("OK", "Block updated successfully", updatedBlock));
-        return
-    } catch (err: Error | any) {
-        errorHandler(err, res);
+  const blockId = parseInt(req.params.id);
+  const payload = req.body;
+
+  try {
+    const updatedBlock = await blockService.updateBlock(blockId, payload);
+
+    if (!updatedBlock) {
+      res.status(404).json(new CustomResponse("FAIL", "Block not found"));
+      return;
     }
+
+    const io = req.app.get('io');
+    io.emit("block_updated", updatedBlock);
+
+    res
+      .status(200)
+      .json(
+        new CustomResponse("OK", "Block updated successfully", updatedBlock)
+      );
+  } catch (err: Error | any) {
+    errorHandler(err, res);
   }
+};
 
 export const deleteBlock = async (req: Request, res: Response) => {
     const blockId = parseInt(req.params.id);

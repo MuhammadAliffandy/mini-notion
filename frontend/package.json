@@ -19,14 +19,17 @@
     "@reduxjs/toolkit": "^2.8.2",
     "@tiptap/react": "^2.12.0",
     "@tiptap/starter-kit": "^2.12.0",
+    "@types/lodash.debounce": "^4.0.9",
     "axios": "^1.9.0",
+    "lodash": "^4.17.21",
     "next": "15.3.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.57.0",
     "react-redux": "^9.2.0",
     "react-toastify": "^11.0.5",
-    "redux-persist": "^6.0.0"
+    "redux-persist": "^6.0.0",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

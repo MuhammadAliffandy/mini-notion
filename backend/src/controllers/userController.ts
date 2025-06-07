@@ -57,7 +57,6 @@ export const loginHandler = async (req: Request, res: Response) => {
 export const logoutHandler = (req:Request, res:Response) => {
    
     const token = req.cookies?.token;
-    console.log("Logout token: ", token);
     
     if (!token) {
         res.sendStatus(204)
