@@ -11,15 +11,23 @@ interface AppImageContentProps {
     control: Control<any>;
     namePrefix: string;
     onChange?: (value: boolean) => void;
+    onIdleImageUrl?: () => void; 
+    onIdleWidth?: () => void;
+    onIdleHeight?: () => void;
 }
 
 const AppImageContent: React.FC<AppImageContentProps> = ({
     control,
     namePrefix,
     onChange,
+    onIdleImageUrl,
+    onIdleWidth,
+    onIdleHeight,
 }) => {
     const [editing, setEditing] = useState(false);
-
+    const [typingTimeoutImage, setTypingTimeoutImage] = useState<NodeJS.Timeout | null>(null);
+    const [typingTimeoutWidth, setTypingTimeoutWidth] = useState<NodeJS.Timeout | null>(null);
+    const [typingTimeoutHeight, setTypingTimeoutHeight] = useState<NodeJS.Timeout | null>(null);
     const imageUrl = useWatch({ control, name: `${namePrefix}.imageUrl` });
     const width = useWatch({ control, name: `${namePrefix}.width` });
     const height = useWatch({ control, name: `${namePrefix}.height` });
@@ -40,6 +48,17 @@ const AppImageContent: React.FC<AppImageContentProps> = ({
                                 },
                             }}
                             placeholder="Image URL"
+                            onChange={(value) => {
+                                if (typingTimeoutImage) {
+                                    clearTimeout(typingTimeoutImage);
+                                }
+
+                                const timeout = setTimeout(() => {
+                                    onIdleImageUrl?.(); 
+                                }, 1000); 
+
+                                setTypingTimeoutImage(timeout);
+                            }}
                         />
                         <AppContainer className="flex items-center gap-[10px]">
                             <AppTextField
@@ -53,6 +72,17 @@ const AppImageContent: React.FC<AppImageContentProps> = ({
                                     },
                                 }}
                                 placeholder="Width"
+                                onChange={(value) => {
+                                    if (typingTimeoutWidth) {
+                                        clearTimeout(typingTimeoutWidth);
+                                    }
+
+                                    const timeout = setTimeout(() => {
+                                        onIdleWidth?.(); 
+                                    }, 1000); 
+
+                                    setTypingTimeoutWidth(timeout);
+                                }}
                             />
                             <AppTextField
                                 control={control}
@@ -65,6 +95,17 @@ const AppImageContent: React.FC<AppImageContentProps> = ({
                                     },
                                 }}
                                 placeholder="Height"
+                                onChange={(value) => {
+                                    if (typingTimeoutHeight) {
+                                        clearTimeout(typingTimeoutHeight);
+                                    }
+
+                                    const timeout = setTimeout(() => {
+                                        onIdleHeight?.(); 
+                                    }, 1000); 
+
+                                    setTypingTimeoutHeight(timeout);
+                                }}
                             />
                         </AppContainer>
 

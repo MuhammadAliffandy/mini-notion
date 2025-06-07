@@ -13,9 +13,8 @@ import * as blockRepository from "../../../api/repository/blockRepository";
 import * as noteRepository from "../../../api/repository/noteRepository";
 import { Blocks, Notes } from "@/app/utils/types";
 import { convertDateString, decodeImageUrl , encodeImageUrl } from "@/app/utils/helper";
-import AppButton from "../../atoms/AppButton/AppButton";
 import { io } from "socket.io-client";
-
+import { debounce, set } from "lodash";
 
 
 interface AppContentViewProps {
@@ -31,7 +30,9 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
 
     const [note, setNote] = useState<Partial<Notes>>({});
     const [blocks, setBlocks] = useState<Blocks[]>([]);
-
+    const [typing , setTyping] = useState<boolean>(false);
+ 
+    const [fields, setFields] = useState<string[]>([]);
     const { control, setValue, getValues, watch } = useForm();
 
     const handleGetNote = async () => {
@@ -64,10 +65,13 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                         setValue(`image_${index}`, decodeImageUrl(data.content || ""));
                     }
                 });
+
+             
             } else {
                 toast.error(res.message || "Failed to fetch blocks data");
             }
         } catch (error) {
+            console.log(error)
             toast.error("Failed to fetch blocks data");
         }
     };
@@ -85,9 +89,11 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
         }
     };
 
+
     useEffect(() => {
         if (blocks.length === 0) handleGetBlocks();
     }, []);
+
 
     useEffect(() => {
         handleGetNote();
@@ -99,7 +105,20 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
         });
 
         socket.on("block_updated", (updatedBlock) => {
-            handleGetBlocks();
+              blocks.map(data => {
+                if (data.id === updatedBlock.id) {
+                    if (data.type === "text" && data.parent_id == null) {
+                        setValue(`title_${data.order_index}`, updatedBlock.content || "");
+                    }
+                    if (data.type === "text" && data.parent_id != null) {
+                        setValue(`subtitle_${data.order_index}`, updatedBlock.content || "");
+                    }
+                    if (data.type === "image") {
+                        setValue(`image_${data.order_index}`, decodeImageUrl(updatedBlock.content || ""));
+                    }
+                }
+              })
+         
         });
 
         return () => {
@@ -107,41 +126,7 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
         };
     }, []);
 
-    const watchedFields = watch();
 
-    useEffect(() => {
-        blocks.forEach((block, index) => {
-            if (block.type === "text" && block.parent_id == null) {
-                const current = watchedFields[`title_${index}`];
-                if (block.content !== current) {
-                    const updatedBlock = { ...block, content: current };
-                    console.log("updated");
-                    handleUpdateBlocks(block.id as number, updatedBlock);
-                }
-            }
-
-            if (block.type === "text" && block.parent_id != null) {
-                const current = watchedFields[`subtitle_${index}`];
-                if (block.content !== current) {
-                    const updatedBlock = { ...block, content: current };
-
-                    handleUpdateBlocks(block.id as number, updatedBlock);
-                }
-            }
-
-            if (block.type === "image") {
-                const current = watchedFields[`image_${index}`];
-                if (block.content !== current?.imageUrl) {
-                    const updatedBlock = {
-                        ...block,
-                        content: encodeImageUrl(current?.imageUrl, current?.width, current?.height),
-                    };
-
-                    handleUpdateBlocks(block.id as number, updatedBlock);
-                }
-            }
-        });
-    }, [watch()]);
 
     return (
         <AppContainer className="w-full bg-white h-full flex flex-col items-start p-[20px] rounded-2xl  ">
@@ -169,27 +154,52 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                 </AppContainer>
                 <AppContainer className="w-full h-full flex flex-col gap-[10px] text-black overflow-hidden  ">
                     {blocks.map((block, index) => (
-                        <div key={index} className="block-item">
-                            {getValues(`title_${index}`) && (
+                        <div key={block.id} className="block-item">
+                            {getValues(`title_${index as number}`) && (
                                 <AppTitleContent
                                     control={control}
                                     name={`title_${index}`}
                                     rules={{ required: "Title is required" }}
                                     className="text-[22px] font-bold"
-
+                                 
+                                    onIdle={()=> { 
+                                        handleUpdateBlocks(block.id as number, { ...block, content: getValues(`title_${index as number}`)});
+                                        console.log('selesai ngetik')}}
                                 />
                             )}
-                            {getValues(`subtitle_${index}`) && (
+                            {getValues(`subtitle_${index as number}`) && (
                                 <AppSubtitleContent
                                     control={control}
                                     name={`subtitle_${index}`}
                                     rules={{ required: "Subtitle is required" }}
+                                    onIdle={() => {
+                                        handleUpdateBlocks(block.id as number, { ...block, content: getValues(`subtitle_${index as number}`)});
+                                        console.log('selesai ngetik subtitle')}
+                                    } 
                                 />
                             )}
-                            {getValues(`image_${index}`) && (
+                            {getValues(`image_${index as number}`) && (
                                 <AppImageContent
                                     control={control}
                                     namePrefix={`image_${index}`}
+                                    onIdleImageUrl={
+                                        () => {
+                                            handleUpdateBlocks(block.id as number, { ...block, content:getValues(`image_${index as number}`).imageUrl});
+                                            console.log('selesai ngetik image')
+                                        }
+                                    }
+                                    onIdleWidth={
+                                        () => {
+                                            handleUpdateBlocks(block.id as number, { ...block, content:getValues(`image_${index as number}`).width});
+                                            console.log('selesai ngetik width')
+                                        }
+                                    }
+                                    onIdleHeight={
+                                        () => {
+                                            handleUpdateBlocks(block.id as number, { ...block, content:getValues(`image_${index as number}`).height});
+                                            console.log('selesai ngetik height')
+                                        }
+                                    }
                                 />
                             )}
                         </div>

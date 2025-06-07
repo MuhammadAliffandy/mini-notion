@@ -7,6 +7,8 @@ interface AppTextField {
   placeholder: string;
   type?: string;
   className?: string;
+  onChange?: (value: string) => void;
+  onBlur?: () => void;
 }
 
 const AppTextField: React.FC<AppTextField> = (props) => {
@@ -19,9 +21,14 @@ const AppTextField: React.FC<AppTextField> = (props) => {
         <>
           <input
             {...field}
+            onBlur={props.onBlur}
             value={field.value ?? ""}
             type={props.type || "text"}
             placeholder={props.placeholder}
+            onChange={(e) => {
+              field.onChange(e.target.value);
+              props.onChange?.(e.target.value);
+            }}
             className={`w-full p-2 border rounded ${
               props.className
             } text-black ${

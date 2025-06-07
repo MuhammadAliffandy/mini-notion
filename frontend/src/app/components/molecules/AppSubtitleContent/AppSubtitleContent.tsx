@@ -11,11 +11,13 @@ interface AppSubtitleContentProps {
     name: string;
     rules?: RegisterOptions;
     className?: string;
-    onChange?: (value: boolean) => void;
+    onChange?: (value: boolean) => void;  
+    onIdle?: () => void;
 }
 
 const AppSubtitleContent: React.FC<AppSubtitleContentProps> = (props) => {
     const [editing, setEditing] = useState(false);
+    const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
 
     return (
         <Controller
@@ -29,6 +31,19 @@ const AppSubtitleContent: React.FC<AppSubtitleContentProps> = (props) => {
                     onUpdate: ({ editor }) => {
                         const html = editor.getHTML();
                         onChange(html);
+
+                        
+                        if (typingTimeout) {
+                            clearTimeout(typingTimeout);
+                        }
+
+            
+                        const timeout = setTimeout(() => {
+                            props.onIdle?.(); 
+                          
+                        }, 1000); 
+                        setTypingTimeout(timeout);
+
                     },
                     editorProps: {
                         attributes: {

@@ -11,11 +11,13 @@ interface AppTitleContentProps {
     name: string;
     rules?: RegisterOptions;
     className?: string;
-    onChange?: (value: boolean) => void;
+    onChange?: (value: string) => void;
+    onIdle?: () => void; 
 }
 
 const AppTitleContent: React.FC<AppTitleContentProps> = (props) => {
     const [editing, setEditing] = useState(false);
+    const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
 
     return (
         <Controller
@@ -29,6 +31,19 @@ const AppTitleContent: React.FC<AppTitleContentProps> = (props) => {
                     onUpdate: ({ editor }) => {
                         const html = editor.getHTML();
                         onChange(html);
+                        props.onChange?.(props.name);
+
+        
+                        if (typingTimeout) {
+                            clearTimeout(typingTimeout);
+                        }
+
+            
+                        const timeout = setTimeout(() => {
+                            props.onIdle?.(); 
+                          
+                        }, 1000); 
+                        setTypingTimeout(timeout);
                     },
                     editorProps: {
                         attributes: {
@@ -37,7 +52,6 @@ const AppTitleContent: React.FC<AppTitleContentProps> = (props) => {
                         handleDOMEvents: {
                             blur: () => {
                                 setEditing(false);
-                                props.onChange?.(false);
                                 return false;
                             },
                         } as any,
@@ -72,7 +86,6 @@ const AppTitleContent: React.FC<AppTitleContentProps> = (props) => {
                                 className="prose prose-sm text-black text-[22px] cursor-pointer"
                                 onClick={() => {
                                     setEditing(true);
-                                    props.onChange?.(true);
                                 }}
                                 dangerouslySetInnerHTML={{
                                     __html:

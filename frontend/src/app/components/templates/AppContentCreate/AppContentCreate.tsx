@@ -19,6 +19,7 @@ import AppHeadline from "../../molecules/AppHeadline/AppHeadline";
 
 interface AppContentViewProps {
     onClick?: () => void;
+    onCreated?: (value: boolean ) => void;
 }
 
 type FieldItem = {
@@ -169,6 +170,9 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                     push("/dashboard");
                 },
             });
+
+            props.onCreated?.(true);
+
         } catch (error) {
             toast.update(toastId, {
                 render: "Failed to upload some blocks.",
@@ -176,6 +180,8 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                 isLoading: false,
                 autoClose: 3000,
             });
+
+            props.onCreated?.(false);
         }
     };
 

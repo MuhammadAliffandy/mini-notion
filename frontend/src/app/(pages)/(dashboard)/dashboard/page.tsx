@@ -24,6 +24,7 @@ const DashboardView: React.FC = () => {
     const [selectAll, setSelectAll] = useState<boolean>(false);
     const [user, setUser] = useState<Users>({} as Users);
     const [notes, setNotes] = useState<Notes[]>([]);
+    const [blockCreated, setBlockCreated] = useState<boolean>(false);
     const [currentNotes, setCurrentNotes] = useState<Notes[]>([]);
     const [selectedNoteIds, setSelectedNoteIds] = useState<number[]>([]);
     const [noteIdData, setNoteIdData] = useState<number>(0);
@@ -224,6 +225,10 @@ const DashboardView: React.FC = () => {
     }, []);
 
     useEffect(() => {
+       if (blockCreated) handleNoteList();
+    }, [blockCreated]);
+
+    useEffect(() => {
         getUser();
     }, []);
 
@@ -255,6 +260,13 @@ const DashboardView: React.FC = () => {
                 {showContentCreate && (
                     <AppContentCreate
                         onClick={() => setShowContentCreate(false)}
+                        onCreated={(value) => {
+                            setBlockCreated(value)
+                            if (value) {
+                                setShowContentCreate(false);
+                                setShowContent(true);
+                            }         
+                        }}
                     />
                 )}
                 {!showContent && !showContentCreate && (
@@ -268,7 +280,7 @@ const DashboardView: React.FC = () => {
                             }}
                         />
 
-                        <AppContainer className="w-full h-full p-[20px] rounded-2xl flex flex-col items-start gap-[20px] bg-white">
+                        <AppContainer className="w-full h-full p-[20px] rounded-2xl flex flex-col items-start gap-[20px] overflow-y-auto overflow-x-hidden bg-white">
                             <AppToolbar
                                 onChange={(event) =>
                                     handleSelectAll(event.target.checked)
