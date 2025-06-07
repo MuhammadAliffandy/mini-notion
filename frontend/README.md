@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## This Frontend Service from Mini Notion - Clone
+First , I create the project using Next JS enviroment to get pretty create for react js framework.
+
+## Build With
+- [TypeScript](https://www.typescriptlang.org/) - TypeScript is a strongly typed programming language that builds on JavaScript, giving you better tooling at any scale
+- [Node JS](https://nodejs.org/en) - Node.js® is an open-source, cross-platform JavaScript runtime environment.
+- [Next JS](https://nextjs.org/dev/) - The React library for web and native user interfaces.
+- [MUI](https://mui.com/) - MUI offers a comprehensive suite of free UI tools to help you ship new features faster..
+- [Redux](https://redux.js.org/) - The Redux DevTools make it easy to trace when, where, why, and how your application's state changed.
+- [Axios](https://axios-http.com/docs/intro/) - Axios is a promise-based HTTP Client for node.js and the browser
+- [Atomic Design](hhttps://atomicdesign.bradfrost.com/chapter-2/) - Atomic design is atoms, molecules, organisms, templates, and pages concurrently working together to create effective interface design systems
+
+
+## FYI 
+- First, i create the project with next ts configuration
+- After that we manage the state managament using redux
+- Configuration Axios for fetchinable API Service 
+- Use pattern structure with atomic design
 
 ## Getting Started
 
-First, run the development server:
+if you need to start api from your local and you want to change more algorithm from this, u can cloning first:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```sh
+$ git clone https://github.com/MuhammadAliffandy/mini-notion.git
+$ cd frontend
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Usage
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+before you run this you must installation package to make the program its not error for u.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```sh
+$ npm install
+```
 
-## Learn More
+NB : Before you start the apps you should addded confguration to .env
 
-To learn more about Next.js, take a look at the following resources:
+```javascript
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+BASE_URL_DEV="DATABASE URL FOR DEVELOPMENT"
+BASE_URL="DATABASE URL FOR PRODUCTION "
+NODE_ENV="deployment || production"
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+```
+run the server with Node JS runtime 
+```sh
+$ npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
