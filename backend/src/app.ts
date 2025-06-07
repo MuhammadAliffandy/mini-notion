@@ -5,6 +5,9 @@ import http from 'http';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import { Server } from 'socket.io';
+import swaggerUi from 'swagger-ui-express';
+import swaggerJson from  '../openapi.json';
+
 
 const app = express();
 const server = http.createServer(app);
@@ -27,6 +30,7 @@ app.use(express.json());
 app.use(cors(corsOptions));
 app.use(express.urlencoded({extended: false}));
 app.use(cookieParser())
+app.use('/api-documentation', swaggerUi.serve, swaggerUi.setup(swaggerJson))
 
 
 app.use(morgan('dev'));

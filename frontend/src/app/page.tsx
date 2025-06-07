@@ -1,5 +1,4 @@
 'use client'
-import Image from "next/image";
 import AppButton from "./components/atoms/AppButton/AppButton";
 import { useRouter } from "next/navigation";
 
