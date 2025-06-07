@@ -9,11 +9,13 @@ import AppButton from "../../atoms/AppButton/AppButton";
 import AppImageContent from "../../molecules/AppImageContent/AppImageContent";
 import AppToolbarCreate from "../../molecules/AppToolbarCreate/AppToolbarCreate";
 import * as bloksRepository from "@/app/api/repository/blockRepository";
-import * as notesRepository from "@/app/api/repository/noteRepository";
+import * as noteRepository from "@/app/api/repository/noteRepository";
 import { toast } from "react-toastify";
-import { Blocks } from "@/app/utils/types";
+import { Blocks, Notes } from "@/app/utils/types";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
+import { encodeImageUrl, convertDateString } from "@/app/utils/helper";
+import AppHeadline from "../../molecules/AppHeadline/AppHeadline";
 
 interface AppContentViewProps {
     onClick?: () => void;
@@ -59,10 +61,24 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
         { type: "subtitle", name: "subtitle", order_index: 1 },
         { type: "image", name: "image_0", order_index: 2 },
     ]);
-
+    const [note, setNote] = useState<Partial<Notes>>({});
     const [titleCount, setTitleCount] = useState(1);
     const [subtitleCount, setSubtitleCount] = useState(1);
     const [imageCount, setImageCount] = useState(1);
+
+    const handleGetNote = async () => {
+        try {
+            const res = await noteRepository.readNote(noteId);
+            if (res.status === "OK") {
+                setNote(res.data);
+            } else {
+                toast.error(res.message || "Failed to fetch note data");
+            }
+        } catch (error) {
+            toast.error("Failed to fetch note data");
+        }
+    };
+
 
     const addTitleField = () => {
         const name = `title_${titleCount}`;
@@ -128,7 +144,7 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
             return {
                 content:
                     field.type == "image"
-                        ? (getValues(field.name) as ImageField)?.imageUrl
+                        ? encodeImageUrl((getValues(field.name) as ImageField)?.imageUrl, (getValues(field.name) as ImageField)?.width , (getValues(field.name) as ImageField)?.height )    
                         : getValues(field.name),
                 type: field.type != "image" ? "text" : "image",
                 order_index: field.order_index,
@@ -163,6 +179,10 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
         }
     };
 
+    useEffect(() => {
+        handleGetNote();
+    }, []);
+
     return (
         <AppContainer className="w-full bg-white h-full flex flex-col items-start p-[20px] rounded-2xl">
             <AppContainer className="w-full h-full bg-transparent p-[20px] flex flex-col gap-[40px] border-2 border-gray-300 rounded-2xl">
@@ -173,6 +193,15 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                             onClick={props.onClick}
                             icon="mdi:arrow-back"
                             className="text-[24px] cursor-pointer text-black"
+                        />
+                        <AppHeadline
+                            className="text-start !items-start"
+                            title={note.title || "Untitled Note"}
+                            subtitle={`Published ${ convertDateString(
+                                note.createdAt || ""
+                            )}`}
+                            titleClassName="font-bold text-left text-[18px]"
+                            subtitleClassName="text-[12px] text-left text-gray-500"
                         />
                     </AppContainer>
                     <AppToolbarCreate

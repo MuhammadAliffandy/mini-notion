@@ -26,3 +26,17 @@ export const convertDateString = (isoString: string): string => {
 
     return tanggal.toLocaleDateString("en-US", options);
 };
+
+
+export const encodeImageUrl = (imageUrl: string, width: string | number , height: string| number) => {
+    return `${imageUrl}?width=${width}&height=${height}`;
+}
+
+export const decodeImageUrl = (encodedUrl: string): { imageUrl: string, width: string, height: string } => {
+    const url = new URL(encodedUrl);
+    const imageUrl = url.origin + url.pathname;
+    const width = url.searchParams.get("width") || "200";
+    const height = url.searchParams.get("height") || "200";
+
+    return { imageUrl : imageUrl, width: width, height: height };
+}

@@ -12,9 +12,11 @@ import { toast } from "react-toastify";
 import * as blockRepository from "../../../api/repository/blockRepository";
 import * as noteRepository from "../../../api/repository/noteRepository";
 import { Blocks, Notes } from "@/app/utils/types";
-import { convertDateString } from "@/app/utils/helper";
+import { convertDateString, decodeImageUrl , encodeImageUrl } from "@/app/utils/helper";
 import AppButton from "../../atoms/AppButton/AppButton";
 import { io } from "socket.io-client";
+
+
 
 interface AppContentViewProps {
     onClick?: () => void;
@@ -29,7 +31,7 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
 
     const [note, setNote] = useState<Partial<Notes>>({});
     const [blocks, setBlocks] = useState<Blocks[]>([]);
-    const [buttonSaved, setButtonSaved] = useState<boolean>(false);
+
     const { control, setValue, getValues, watch } = useForm();
 
     const handleGetNote = async () => {
@@ -59,11 +61,7 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                         setValue(`subtitle_${index}`, data.content || "");
                     }
                     if (data.type === "image") {
-                        setValue(`image_${index}`, {
-                            imageUrl: data.content || "",
-                            width: "200",
-                            height: "200",
-                        });
+                        setValue(`image_${index}`, decodeImageUrl(data.content || ""));
                     }
                 });
             } else {
@@ -78,7 +76,7 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
         try {
             const res = await blockRepository.updateBlock(id, data);
             if (res.status === "OK") {
-                setButtonSaved(false);
+         
             } else {
                 toast.error(res.message || "Failed to update blocks data");
             }
@@ -136,7 +134,7 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                 if (block.content !== current?.imageUrl) {
                     const updatedBlock = {
                         ...block,
-                        content: current?.imageUrl,
+                        content: encodeImageUrl(current?.imageUrl, current?.width, current?.height),
                     };
 
                     handleUpdateBlocks(block.id as number, updatedBlock);
@@ -178,7 +176,7 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                                     name={`title_${index}`}
                                     rules={{ required: "Title is required" }}
                                     className="text-[22px] font-bold"
-                                    onChange={(value) => setButtonSaved(value)}
+
                                 />
                             )}
                             {getValues(`subtitle_${index}`) && (
@@ -186,26 +184,18 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                                     control={control}
                                     name={`subtitle_${index}`}
                                     rules={{ required: "Subtitle is required" }}
-                                    onChange={(value) => setButtonSaved(value)}
                                 />
                             )}
                             {getValues(`image_${index}`) && (
                                 <AppImageContent
                                     control={control}
                                     namePrefix={`image_${index}`}
-                                    onChange={(value) => setButtonSaved(value)}
                                 />
                             )}
                         </div>
                     ))}
                 </AppContainer>
-                {buttonSaved && (
-                    <AppButton
-                        text="Simpan"
-                        className="w-max self-end cursor-pointer"
-                        // onClick={handleUpdateBlocks}
-                    />
-                )}
+             
             </AppContainer>
         </AppContainer>
     );

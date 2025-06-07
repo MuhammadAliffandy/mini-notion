@@ -32,7 +32,7 @@ const AppTitleContent: React.FC<AppTitleContentProps> = (props) => {
                     },
                     editorProps: {
                         attributes: {
-                            class: "max-h-max border border-none focus:outline-none ",
+                            class: "max-h-max w-full break-words border border-none focus:outline-none ",
                         },
                         handleDOMEvents: {
                             blur: () => {
@@ -61,7 +61,7 @@ const AppTitleContent: React.FC<AppTitleContentProps> = (props) => {
 
                 return (
                     <AppContainer
-                        className={`w-max h-max flex flex-col ${
+                        className={`w-full h-max flex flex-col ${
                             props.className || ""
                         }`}
                     >

@@ -32,7 +32,7 @@ const AppSubtitleContent: React.FC<AppSubtitleContentProps> = (props) => {
                     },
                     editorProps: {
                         attributes: {
-                            class: "max-h-max max-w-[80vw] break-words w-full  border border-none focus:outline-none ",
+                            class: "max-h-max break-words w-full  border border-none focus:outline-none whitespace-normal overflow-wrap  ",
                         },
                         handleDOMEvents: {
                             blur: () => {
@@ -61,7 +61,7 @@ const AppSubtitleContent: React.FC<AppSubtitleContentProps> = (props) => {
 
                 return (
                     <AppContainer
-                        className={`w-max h-max flex flex-col ${
+                        className={`w-full h-max flex flex-col ${
                             props.className || ""
                         }`}
                     >
