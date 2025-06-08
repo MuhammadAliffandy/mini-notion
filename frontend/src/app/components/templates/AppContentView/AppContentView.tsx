@@ -187,19 +187,19 @@ const AppContentView: React.FC<AppContentViewProps> = (props) => {
                                     namePrefix={`image_${index}`}
                                     onIdleImageUrl={
                                         () => {
-                                            handleUpdateBlocks(block.id as number, { ...block, content:getValues(`image_${index as number}`).imageUrl});
+                                            handleUpdateBlocks(block.id as number, { ...block, content:encodeImageUrl(getValues(`image_${index as number}`).imageUrl , getValues(`image_${index as number}`).width, getValues(`image_${index as number}`).height  )})
                                             console.log('selesai ngetik image')
                                         }
                                     }
                                     onIdleWidth={
                                         () => {
-                                            handleUpdateBlocks(block.id as number, { ...block, content:getValues(`image_${index as number}`).width});
+                                            handleUpdateBlocks(block.id as number, { ...block, content:encodeImageUrl(getValues(`image_${index as number}`).imageUrl , getValues(`image_${index as number}`).width, getValues(`image_${index as number}`).height  )});
                                             console.log('selesai ngetik width')
                                         }
                                     }
                                     onIdleHeight={
                                         () => {
-                                            handleUpdateBlocks(block.id as number, { ...block, content:getValues(`image_${index as number}`).height});
+                                            handleUpdateBlocks(block.id as number, { ...block, content:encodeImageUrl(getValues(`image_${index as number}`).imageUrl , getValues(`image_${index as number}`).width, getValues(`image_${index as number}`).height  )});
                                             console.log('selesai ngetik height')
                                         }
                                     }

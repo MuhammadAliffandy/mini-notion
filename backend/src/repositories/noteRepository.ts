@@ -13,7 +13,8 @@ export const readNotes =  () => {
                     name: true, 
                 },
             },
-        }
+        },
+   
     })
 }
 

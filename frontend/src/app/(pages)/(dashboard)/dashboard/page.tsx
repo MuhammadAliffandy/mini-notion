@@ -85,7 +85,7 @@ const DashboardView: React.FC = () => {
     };
 
     const handleNoteUpdate = async (data: { noteEditTitle: string }) => {
-        const toastId = toast.loading("Creating note title..."); 
+        const toastId = toast.loading("Update note title..."); 
         try {
             const payload = {
                 title: data.noteEditTitle,
@@ -129,7 +129,7 @@ const DashboardView: React.FC = () => {
     };
 
     const handleNoteDelete = async (id: number) => {
-        const toastId = toast.loading("Creating note title..."); 
+        const toastId = toast.loading("Deleting note title..."); 
         try {
             const res = await noteRepository.deleteNote(id);
             if (res.status == "OK") {

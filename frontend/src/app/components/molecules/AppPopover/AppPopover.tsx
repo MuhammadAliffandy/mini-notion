@@ -1,53 +1,45 @@
-"use client";
-
-import { useState, MouseEvent, ReactNode } from "react";
-import { Tooltip, Popover } from "@mui/material";
+import { OverlayTrigger, Popover , Fade} from "react-bootstrap";
 import { Icon } from "@iconify/react";
 
 interface AppPopoverProps {
-    children: ReactNode;
+    children: React.ReactNode;
 }
 
 const AppPopover: React.FC<AppPopoverProps> = ({ children }) => {
-    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-
-    const handleClick = (event: MouseEvent<SVGSVGElement>) => {
-        setAnchorEl(event.currentTarget as unknown as HTMLElement);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
-    return (
-        <>
-            <Tooltip title="More">
-                <Icon
-                    icon="mdi:dots-horizontal"
-                    className="text-black cursor-pointer"
-                    onClick={handleClick}
-                    fontSize={24}
-                />
-            </Tooltip>
-
-            <Popover
-                open={Boolean(anchorEl)}
-                anchorEl={anchorEl}
-                onClose={handleClose}
-                anchorOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                }}
-                transformOrigin={{
-                    vertical: "bottom",
-                    horizontal: "right",
-                }}
-            >
-                <div className="bg-white rounded-xl flex gap-[10px] p-[10px] items-center">
+    const popover = (
+        <Popover id="popover-basic">
+            <Popover.Body className="relative">
+                <div className="bg-white rounded-xl flex gap-[10px] p-[10px] items-center shadow-xl relative">
                     {children}
                 </div>
-            </Popover>
-        </>
+            </Popover.Body>
+        </Popover>
+    );
+
+    return (
+        <OverlayTrigger
+            trigger="click"
+            placement="left"
+            overlay={popover}
+            rootClose
+            transition={Fade}
+            popperConfig={{
+                modifiers: [
+                    {
+                        name: "offset",
+                        options: {
+                            offset: [-10, 10], 
+                        },
+                    },
+                ],
+            }}
+        >
+            <Icon
+                icon="mdi:dots-horizontal"
+                className="text-black cursor-pointer"
+                fontSize={24}
+            />
+        </OverlayTrigger>
     );
 };
 
